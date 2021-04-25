@@ -93,8 +93,16 @@ BEGIN
 	 [OriginWarehouseId]      INT NOT NULL ,
 	 [DestinationWarehouseId] INT NOT NULL ,
 	 [TruckId]                INT NOT NULL ,
-	 [CargoId]                INT NOT NULL ,
 	 [Price]                  FLOAT NOT NULL ,
+	);
+END
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ShipmentCargo' and xtype='U')
+BEGIN
+	CREATE TABLE [delivery].[ShipmentCargo]
+	(
+	 [ShipmentId]	INT NOT NULL ,
+	 [CargoId]      INT NOT NULL ,
 	);
 END
 
@@ -150,6 +158,7 @@ ALTER TABLE [delivery].[City] ADD CONSTRAINT [PK_City] PRIMARY KEY CLUSTERED ([I
 ALTER TABLE [delivery].[Warehouse] ADD CONSTRAINT [PK_Warehouse] PRIMARY KEY CLUSTERED ([Id] ASC)
 ALTER TABLE [delivery].[Customer] ADD CONSTRAINT [PK_Customer] PRIMARY KEY CLUSTERED ([Id] ASC)
 ALTER TABLE [delivery].[TruckDriver] ADD CONSTRAINT [PK_TruckDriver] PRIMARY KEY CLUSTERED ([TruckId] ASC, [DriverId])
+ALTER TABLE [delivery].[ShipmentCargo] ADD CONSTRAINT [PK_ShipmentCargo] PRIMARY KEY CLUSTERED ([ShipmentId] ASC, [CargoId])
 
 GO
 
@@ -160,7 +169,6 @@ CONSTRAINT [FK_Cargo_CustomerReciever] FOREIGN KEY ([CustomerRecieverId])  REFER
 
 ALTER TABLE [delivery].[Shipment]
 ADD CONSTRAINT [FK_Shipment_Truck] FOREIGN KEY ([TruckId])  REFERENCES [delivery].[Truck]([Id]),
-	CONSTRAINT [FK_Shipment_Cargo] FOREIGN KEY ([CargoId])  REFERENCES [delivery].[Cargo]([Id]),
 	CONSTRAINT [FK_Shipment_Route] FOREIGN KEY ([OriginWarehouseId], [DestinationWarehouseId])  REFERENCES [delivery].[Route]([OriginWarehouseId], [DestinationWarehouseId]);
 
 ALTER TABLE [delivery].[Route]
@@ -175,4 +183,8 @@ ADD CONSTRAINT [FK_City_State] FOREIGN KEY ([StateId])  REFERENCES [delivery].[S
 
 ALTER TABLE [delivery].[TruckDriver]
 ADD CONSTRAINT [FK_TruckDriver_Truck] FOREIGN KEY ([TruckId])  REFERENCES [delivery].[Truck]([Id]),
-    CONSTRAINT [FK_TruckDriver_Driver] FOREIGN KEY ([DriverId])  REFERENCES [Delivery].[Driver]([Id])
+    CONSTRAINT [FK_TruckDriver_Driver] FOREIGN KEY ([DriverId])  REFERENCES [delivery].[Driver]([Id])
+
+ALTER TABLE [delivery].[ShipmentCargo]
+ADD CONSTRAINT [FK_ShipmentCargo_Shipment] FOREIGN KEY ([ShipmentId])  REFERENCES [delivery].[Shipment]([Id]),
+    CONSTRAINT [FK_ShipmentCargo_Cargo] FOREIGN KEY ([CargoId])  REFERENCES [delivery].[Cargo]([Id])
