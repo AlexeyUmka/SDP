@@ -93,7 +93,6 @@ BEGIN
 	 [OriginWarehouseId]      INT NOT NULL ,
 	 [DestinationWarehouseId] INT NOT NULL ,
 	 [TruckId]                INT NOT NULL ,
-	 [Price]                  FLOAT NOT NULL ,
 	);
 END
 
