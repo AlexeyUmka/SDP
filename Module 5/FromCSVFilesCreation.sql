@@ -1,8 +1,5 @@
 use DeliveryDB
 
--- disable all constraints
-EXEC sp_MSforeachtable "ALTER TABLE ? NOCHECK CONSTRAINT all"
-
 --Drivers
 DELETE FROM delivery.Driver
 
@@ -59,69 +56,18 @@ DECLARE @ElementName nvarchar(max);
 DECLARE @Index int;
 
 --States
-DECLARE ElementCursor CURSOR 
-  LOCAL STATIC READ_ONLY FORWARD_ONLY
-FOR 
+INSERT INTO delivery.State
 SELECT DISTINCT State
 FROM #WarehousesCSV
 
-SET @Index = 0
-
-OPEN ElementCursor
-FETCH NEXT FROM ElementCursor INTO @ElementName
-WHILE @@FETCH_STATUS = 0
-BEGIN 
-	INSERT INTO delivery.State VALUES(@Index, @ElementName)
-    FETCH NEXT FROM ElementCursor INTO @ElementName
-	SET @Index = @Index + 1
-END
-
-CLOSE ElementCursor
-DEALLOCATE ElementCursor
-
 --Cities
-DECLARE @StateName nvarchar(max);
-DECLARE ElementCursor CURSOR 
-  LOCAL STATIC READ_ONLY FORWARD_ONLY
-FOR 
-SELECT DISTINCT City, State
-FROM #WarehousesCSV
-
-SET @Index = 0
-
-OPEN ElementCursor
-FETCH NEXT FROM ElementCursor INTO @ElementName, @StateName
-WHILE @@FETCH_STATUS = 0
-BEGIN 
-	INSERT INTO delivery.City VALUES(@Index, (SELECT Id from delivery.State where Name = @StateName), @ElementName)
-    FETCH NEXT FROM ElementCursor INTO @ElementName, @StateName
-	SET @Index = @Index + 1
-END
-
-CLOSE ElementCursor
-DEALLOCATE ElementCursor
+INSERT INTO delivery.City
+SELECT Wr.Id, st.Id, Wr.City
+FROM #WarehousesCSV Wr INNER JOIN delivery.State st ON st.Name=Wr.State
 
 --Warehouses
-Declare @CityName nvarchar(max);
-DECLARE ElementCursor CURSOR 
-  LOCAL STATIC READ_ONLY FORWARD_ONLY
-FOR 
-SELECT Id, City
-FROM #WarehousesCSV
-
-OPEN ElementCursor
-FETCH NEXT FROM ElementCursor INTO @Index, @CityName
-WHILE @@FETCH_STATUS = 0
-BEGIN 
-	INSERT INTO delivery.Warehouse VALUES(@Index, (SELECT Id from delivery.City where Name = @CityName))
-    FETCH NEXT FROM ElementCursor INTO @Index, @CityName
-END
-
-CLOSE ElementCursor
-DEALLOCATE ElementCursor
-
+INSERT INTO delivery.Warehouse
+SELECT Wr.Id, Ct.Id
+FROM #WarehousesCSV Wr INNER JOIN delivery.City Ct ON Ct.Id=Wr.Id
 
 DROP TABLE #WarehousesCSV
-
--- enable all constraints
-exec sp_MSforeachtable @command1="ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all"

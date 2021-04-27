@@ -51,7 +51,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='State' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[State]
 	(
-	 [Id]   INT NOT NULL ,
+	 [Id]   INT NOT NULL IDENTITY(1,1),
 	 [Name] NVARCHAR(MAX) NOT NULL ,
 	);
 END
@@ -60,7 +60,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='City' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[City]
 	(
-	 [Id]      INT NOT NULL ,
+	 [Id]      INT NOT NULL,
 	 [StateId] INT NOT NULL ,
 	 [Name] NVARCHAR(MAX) NOT NULL ,
 	);
