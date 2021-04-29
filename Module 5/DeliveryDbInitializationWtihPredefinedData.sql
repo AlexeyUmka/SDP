@@ -103,16 +103,27 @@ SELECT TOP(10000)
 from delivery.Route
 
 -- Shipment
-GO
 DECLARE @TruckMinId INT = (SELECT TOP 1 Id FROM delivery.Truck);
 DECLARE @TruckMaxId INT = (SELECT TOP 1 Id FROM delivery.Truck ORDER BY Id DESC);
+DECLARE @DriverMinId INT = (SELECT TOP 1 Id FROM delivery.Driver);
+DECLARE @DriverMaxId INT = (SELECT TOP 1 Id FROM delivery.Driver ORDER BY Id DESC);
 DECLARE @OriginMinId INT = (SELECT TOP 1 OriginWarehouseId FROM delivery.Route);
 DECLARE @OriginMaxId INT = (SELECT TOP 1 OriginWarehouseId FROM delivery.Route ORDER BY OriginWarehouseId DESC);
 DECLARE @DestinationMinId INT = (SELECT TOP 1 DestinationWarehouseId FROM delivery.Route);
 DECLARE @DestinationMaxId INT = (SELECT TOP 1 DestinationWarehouseId FROM delivery.Route ORDER BY DestinationWarehouseId DESC);
 INSERT INTO delivery.Shipment
-VALUES (FLOOR(RAND()*(@OriginMaxId-@OriginMinId+1))+@OriginMinId, FLOOR(RAND()*(@DestinationMaxId-@DestinationMinId+1))+@DestinationMinId, FLOOR(RAND()*(@TruckMaxId-@TruckMinId+1))+@TruckMinId)
-GO 1000
+SELECT TOP (1000)
+W.OriginId,
+W.DestinationId,
+TD.TruckId,
+TD.DriverId
+FROM delivery.Route
+CROSS APPLY (SELECT
+FLOOR(RAND(CHECKSUM(NEWID()))*(@OriginMaxId-@OriginMinId+1))+@OriginMinId AS OriginId,
+FLOOR(RAND(CHECKSUM(NEWID()))*(@DestinationMaxId-@DestinationMinId+1))+@DestinationMinId AS DestinationId
+) W, delivery.TruckDriver TD
+WHERE W.Originid != W.DestinationId
+ORDER BY NEWID()
 
 -- ShipmentCargo
 INSERT INTO delivery.ShipmentCargo

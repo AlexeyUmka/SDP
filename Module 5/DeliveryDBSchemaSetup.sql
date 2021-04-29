@@ -93,6 +93,7 @@ BEGIN
 	 [OriginWarehouseId]      INT NOT NULL ,
 	 [DestinationWarehouseId] INT NOT NULL ,
 	 [TruckId]                INT NOT NULL ,
+	 [DriverId]				  INT NOT NULL ,
 	);
 END
 
@@ -168,7 +169,8 @@ CONSTRAINT [FK_Cargo_CustomerReciever] FOREIGN KEY ([CustomerRecieverId])  REFER
 
 ALTER TABLE [delivery].[Shipment]
 ADD CONSTRAINT [FK_Shipment_Truck] FOREIGN KEY ([TruckId])  REFERENCES [delivery].[Truck]([Id]),
-	CONSTRAINT [FK_Shipment_Route] FOREIGN KEY ([OriginWarehouseId], [DestinationWarehouseId])  REFERENCES [delivery].[Route]([OriginWarehouseId], [DestinationWarehouseId]);
+	CONSTRAINT [FK_Shipment_Route] FOREIGN KEY ([OriginWarehouseId], [DestinationWarehouseId])  REFERENCES [delivery].[Route]([OriginWarehouseId], [DestinationWarehouseId]),
+	CONSTRAINT [FK_Shipment_Driver] FOREIGN KEY ([DriverId])  REFERENCES [delivery].[Driver]([Id]);
 
 ALTER TABLE [delivery].[Route]
 ADD CONSTRAINT [FK_Route_WarehouseOrigin] FOREIGN KEY ([OriginWarehouseId])  REFERENCES [delivery].[Warehouse]([Id]),
