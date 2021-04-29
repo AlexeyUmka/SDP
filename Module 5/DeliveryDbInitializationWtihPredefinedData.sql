@@ -103,6 +103,7 @@ SELECT TOP(10000)
 from delivery.Route
 
 -- Shipment
+GO
 DECLARE @TruckMinId INT = (SELECT TOP 1 Id FROM delivery.Truck);
 DECLARE @TruckMaxId INT = (SELECT TOP 1 Id FROM delivery.Truck ORDER BY Id DESC);
 DECLARE @OriginMinId INT = (SELECT TOP 1 OriginWarehouseId FROM delivery.Route);
