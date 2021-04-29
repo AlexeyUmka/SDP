@@ -89,7 +89,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Shipment' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[Shipment]
 	(
-	 [Id]					  INT NOT NULL ,
+	 [Id]					  INT NOT NULL IDENTITY(1,1),
 	 [OriginWarehouseId]      INT NOT NULL ,
 	 [DestinationWarehouseId] INT NOT NULL ,
 	 [TruckId]                INT NOT NULL ,
@@ -109,7 +109,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Cargo' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[Cargo]
 	(
-	 [Id]                 INT NOT NULL ,
+	 [Id]                 INT NOT NULL IDENTITY(1,1),
 	 [CustomerSenderId]   INT NOT NULL ,
 	 [CustomerRecieverId] INT NOT NULL ,
 	 [Volume]             FLOAT NOT NULL ,
