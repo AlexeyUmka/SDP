@@ -51,7 +51,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='State' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[State]
 	(
-	 [Id]   INT NOT NULL ,
+	 [Id]   INT NOT NULL IDENTITY(1,1),
 	 [Name] NVARCHAR(MAX) NOT NULL ,
 	);
 END
@@ -60,7 +60,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='City' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[City]
 	(
-	 [Id]      INT NOT NULL ,
+	 [Id]      INT NOT NULL,
 	 [StateId] INT NOT NULL ,
 	 [Name] NVARCHAR(MAX) NOT NULL ,
 	);
@@ -89,10 +89,11 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Shipment' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[Shipment]
 	(
-	 [Id]					  INT NOT NULL ,
+	 [Id]					  INT NOT NULL IDENTITY(1,1),
 	 [OriginWarehouseId]      INT NOT NULL ,
 	 [DestinationWarehouseId] INT NOT NULL ,
 	 [TruckId]                INT NOT NULL ,
+	 [DriverId]				  INT NOT NULL ,
 	);
 END
 
@@ -109,7 +110,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Cargo' and xtype='U')
 BEGIN
 	CREATE TABLE [delivery].[Cargo]
 	(
-	 [Id]                 INT NOT NULL ,
+	 [Id]                 INT NOT NULL IDENTITY(1,1),
 	 [CustomerSenderId]   INT NOT NULL ,
 	 [CustomerRecieverId] INT NOT NULL ,
 	 [Volume]             FLOAT NOT NULL ,
@@ -168,7 +169,8 @@ CONSTRAINT [FK_Cargo_CustomerReciever] FOREIGN KEY ([CustomerRecieverId])  REFER
 
 ALTER TABLE [delivery].[Shipment]
 ADD CONSTRAINT [FK_Shipment_Truck] FOREIGN KEY ([TruckId])  REFERENCES [delivery].[Truck]([Id]),
-	CONSTRAINT [FK_Shipment_Route] FOREIGN KEY ([OriginWarehouseId], [DestinationWarehouseId])  REFERENCES [delivery].[Route]([OriginWarehouseId], [DestinationWarehouseId]);
+	CONSTRAINT [FK_Shipment_Route] FOREIGN KEY ([OriginWarehouseId], [DestinationWarehouseId])  REFERENCES [delivery].[Route]([OriginWarehouseId], [DestinationWarehouseId]),
+	CONSTRAINT [FK_Shipment_Driver] FOREIGN KEY ([DriverId])  REFERENCES [delivery].[Driver]([Id]);
 
 ALTER TABLE [delivery].[Route]
 ADD CONSTRAINT [FK_Route_WarehouseOrigin] FOREIGN KEY ([OriginWarehouseId])  REFERENCES [delivery].[Warehouse]([Id]),
