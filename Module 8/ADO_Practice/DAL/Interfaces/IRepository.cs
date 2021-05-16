@@ -6,9 +6,9 @@ namespace DAL.Interfaces
         T: class
     {
         IEnumerable<T> GetAll();    
-        T GetByKey(object key);    
+        IEnumerable<T> GetByKey(object key);    
         void Insert(T entity);    
         void Update(T entity);    
-        void Delete(T entity);
+        void Delete(object key);
     }
 }
