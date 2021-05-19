@@ -1,10 +1,10 @@
-using System.Data;
+using System;
 
 namespace DAL.Interfaces
 {
-    public interface ITransactional
+    public interface IUnitOfWork : IDisposable
     {
-        IDbTransaction GetCurrentTransaction();
+        IRepository<T> GetRepository<T>() where T: class, new ();
         void BeginTransaction();
         void CommitTransaction();
         void RollbackTransaction();
