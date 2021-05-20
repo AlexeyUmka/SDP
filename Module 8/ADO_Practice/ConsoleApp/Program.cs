@@ -36,20 +36,18 @@ namespace ConsoleApp
                 .AddSingleton(configuration)
                 .BuildServiceProvider();
 
-            using (var unitOfWork = serviceProvider.GetService<IUnitOfWork>())
+            using var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
+            var repository = serviceProvider.GetService<IRepository<Customer>>();
+            // unitOfWork.BeginTransaction();
+            // repository.Insert(new Customer(){Id = 11, FirstName = "hehe", LastName = "hehe"});
+            // repository.Update(new Customer(){Id = 11, FirstName = "hoba", LastName = "hoba"});
+            // repository.GetByKey(new {Id = 11});
+            // repository.Delete(new {Id = 11});
+            // unitOfWork.CommitTransaction();
+            // unitOfWork.RollbackTransaction();
+            foreach (var c in repository.GetAll())
             {
-                var repository = serviceProvider.GetService<IRepository<Customer>>();
-                // unitOfWork.BeginTransaction();
-                // repository.Insert(new Customer(){Id = 11, FirstName = "hehe", LastName = "hehe"});
-                // repository.Update(new Customer(){Id = 11, FirstName = "hoba", LastName = "hoba"});
-                // repository.GetByKey(new {Id = 11});
-                // repository.Delete(new {Id = 11});
-                // unitOfWork.CommitTransaction();
-                // unitOfWork.RollbackTransaction();
-                foreach (var c in repository.GetAll())
-                {
-                    Console.WriteLine($"{c.Id}, {c.FirstName}, {c.LastName}, {c.Phone}");
-                }
+                Console.WriteLine($"{c.Id}, {c.FirstName}, {c.LastName}, {c.Phone}");
             }
         }
     }

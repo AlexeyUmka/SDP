@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Transactions;
 using DAL.Interfaces;
 using DAL.Repositories;
 
@@ -62,6 +63,10 @@ namespace DAL
             {
                 _dbTransaction?.Dispose();
                 _dbConnection?.Dispose();
+            }
+            if (Transaction.Current is not null && Transaction.Current.TransactionInformation.Status == TransactionStatus.Active)
+            {
+                _dbTransaction?.Rollback();
             }
             if (_dbConnection != null && _dbConnection.State == ConnectionState.Open)
             {
