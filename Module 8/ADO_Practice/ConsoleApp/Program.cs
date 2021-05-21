@@ -23,7 +23,7 @@ namespace ConsoleApp
                 .AddJsonFile(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName+"/ConsoleApp","appsettings.json"))
                 .Build();
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<IUnitOfWork, UnitOfWork>()
+                .AddScoped<IUnitOfWork, UnitOfWork>()
                 .AddTransient(typeof(IRepository<>), typeof(AdoConnectedRepository<>))
                 .AddTransient<IDbConnection>(connection =>
                 {

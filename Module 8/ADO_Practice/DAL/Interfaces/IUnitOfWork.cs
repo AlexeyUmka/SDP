@@ -5,7 +5,6 @@ namespace DAL.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-
         IDbConnection GetConnection();
         IDbTransaction GetTransaction();
         void BeginTransaction();
