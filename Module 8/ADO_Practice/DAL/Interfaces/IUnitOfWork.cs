@@ -7,8 +7,7 @@ namespace DAL.Interfaces
     {
         IDbConnection GetConnection();
         IDbTransaction GetTransaction();
-        void BeginTransaction();
-        void CommitTransaction();
-        void RollbackTransaction();
+        void Save();
+        void Rollback();
     }
 }

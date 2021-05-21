@@ -15,9 +15,9 @@ namespace DAL.Repositories
         private readonly IUnitOfWork _unitOfWork;
         
 
-        public AdoConnectedRepository(IDbReaderMapperFactory mapperFactory, DbProviderFactory dbProviderFactory, IUnitOfWork unitOfWork)
+        public AdoConnectedRepository(IDbReaderMapperFactory mapperFactory, IUnitOfWork unitOfWork)
         {
-            _dbProviderFactory = dbProviderFactory;
+            _dbProviderFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
             _mapper = mapperFactory.GetMapper<TEntity>();
             _unitOfWork = unitOfWork;
         }

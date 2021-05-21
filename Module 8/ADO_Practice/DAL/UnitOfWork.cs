@@ -1,57 +1,82 @@
 using System;
 using System.Data;
+using System.Data.Common;
+using System.Linq;
 using DAL.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace DAL
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IDbConnection _dbConnection;
+        private IDbConnection _dbConnection;
         private IDbTransaction _dbTransaction;
+        private readonly IConfigurationRoot _configurationRoot;
 
         private bool _disposed;
         
-        public UnitOfWork(IDbConnection connection)
+        public UnitOfWork(IConfigurationRoot configurationRoot)
         {
-            _dbConnection = connection;
-            _dbConnection.Open();
+            _configurationRoot = configurationRoot;
         }
 
         public IDbConnection GetConnection()
         {
+            if (_dbConnection is null)
+            {
+                var dbProviderFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+                _dbConnection = dbProviderFactory.CreateConnection();
+                _dbConnection.ConnectionString = _configurationRoot.GetConnectionString("SqlDeliveryDB");
+                _dbConnection.Open();
+            }
+            else if ((new[] {ConnectionState.Broken, ConnectionState.Closed}).Any(state => _dbConnection.State == state))
+            {
+                _dbConnection.Open();
+            }
+
             return _dbConnection;
         }
 
         public IDbTransaction GetTransaction()
         {
-            return _dbTransaction;
+            return _dbTransaction ??= GetConnection().BeginTransaction();
         }
 
-        public void BeginTransaction()
+        public void Save()
         {
-            _dbTransaction = _dbConnection.BeginTransaction();
+            GetTransaction().Commit();
+            _dbTransaction = GetConnection().BeginTransaction();
         }
 
-        public void CommitTransaction()
+        public void Rollback()
         {
-            _dbTransaction.Commit();
+            GetTransaction().Rollback();
+            _dbTransaction = GetConnection().BeginTransaction();
         }
 
-        public void RollbackTransaction()
+        ~UnitOfWork()
         {
-            _dbTransaction.Rollback();
+            Dispose(false);
         }
-        
+
         public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
         {
             if (_disposed)
             {
                 return;
             }
-            _dbTransaction?.Dispose();
-            _dbConnection?.Dispose();
+            if (disposing)
+            { 
+                _dbTransaction?.Dispose();
+                _dbConnection?.Dispose();
+            }
             _disposed = true;
-            GC.SuppressFinalize(this);
         }
     }
 }
