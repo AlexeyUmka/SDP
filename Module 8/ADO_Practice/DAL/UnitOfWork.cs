@@ -44,38 +44,28 @@ namespace DAL
 
         public void Save()
         {
-            GetTransaction().Commit();
+            var transaction = GetTransaction();
+            transaction.Commit();
+            transaction.Dispose();
             _dbTransaction = GetConnection().BeginTransaction();
         }
 
         public void Rollback()
         {
-            GetTransaction().Rollback();
+            var transaction = GetTransaction();
+            transaction.Rollback();
+            transaction.Dispose();
             _dbTransaction = GetConnection().BeginTransaction();
         }
 
-        ~UnitOfWork()
-        {
-            Dispose(false);
-        }
-
         public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
         {
             if (_disposed)
             {
                 return;
             }
-            if (disposing)
-            { 
-                _dbTransaction?.Dispose();
-                _dbConnection?.Dispose();
-            }
+            _dbTransaction?.Dispose();
+            _dbConnection?.Dispose();
             _disposed = true;
         }
     }

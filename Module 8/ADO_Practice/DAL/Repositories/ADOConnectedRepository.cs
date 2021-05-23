@@ -10,21 +10,19 @@ namespace DAL.Repositories
 {
     public class AdoConnectedRepository<TEntity> : IRepository<TEntity> where TEntity:class, new()
     {
-        private readonly DbProviderFactory _dbProviderFactory;
         private readonly IDbReaderMapper<TEntity> _mapper;
         private readonly IUnitOfWork _unitOfWork;
         
 
         public AdoConnectedRepository(IDbReaderMapperFactory mapperFactory, IUnitOfWork unitOfWork)
         {
-            _dbProviderFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
             _mapper = mapperFactory.GetMapper<TEntity>();
             _unitOfWork = unitOfWork;
         }
         
         public IEnumerable<TEntity> GetAll()
         {
-            using var command = _dbProviderFactory.CreateCommand();
+            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"SELECT * FROM delivery.{typeof(TEntity).Name}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
@@ -39,7 +37,7 @@ namespace DAL.Repositories
         public IEnumerable<TEntity> GetByKey(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}='{p.GetValue(key)}' "));
-            using var command = _dbProviderFactory.CreateCommand();
+            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"SELECT * FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
@@ -54,7 +52,7 @@ namespace DAL.Repositories
         public void Insert(TEntity entity)
         {
             var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"'{p.GetValue(entity)?.ToString()}'"));
-            using var command = _dbProviderFactory.CreateCommand();
+            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"INSERT INTO delivery.{typeof(TEntity).Name} VALUES ({insertQuery})";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
@@ -68,7 +66,7 @@ namespace DAL.Repositories
             var equalsQuery = string.Join("AND",entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
                 .Select(p => $"{p.Name}='{p.GetValue(entity)}' "));
-            using var command = _dbProviderFactory.CreateCommand();
+            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"UPDATE delivery.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
@@ -79,7 +77,7 @@ namespace DAL.Repositories
         public void Delete(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}='{p.GetValue(key)}' "));
-            using var command = _dbProviderFactory.CreateCommand();
+            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"DELETE FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
