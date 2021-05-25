@@ -23,7 +23,7 @@ namespace ConsoleApp
                 .Build();
             var serviceProvider = new ServiceCollection()
                 .AddScoped<IUnitOfWork, UnitOfWork>()
-                .AddTransient(typeof(IRepository<>), typeof(DapperRepository<>))
+                .AddTransient(typeof(IRepository<>), typeof(EfCoreRepository<>))
                 .AddSingleton<IDbReaderMapperFactory, DbReaderMapperFactory>()
                 .AddSingleton(configuration)
                 .BuildServiceProvider();
@@ -39,12 +39,12 @@ namespace ConsoleApp
             repository.Update(new Customer(){Id = 12, FirstName = "sss", LastName = "sss", Phone = "22"});
             Console.WriteLine("After Update");
             DisplayAll(repository);
-            var r = repository.GetByKey(new {Id = 12}).ToList();
+            var r = repository.GetByKey(12).ToList();
             Console.WriteLine("get by key 12");
             DisplayCustomer(r.Single());
             Console.WriteLine("Before Delete");
             DisplayAll(repository);
-            repository.Delete(new {Id = 12});
+            repository.Delete(12);
             Console.WriteLine("After Delete");
             DisplayAll(repository);
         }
