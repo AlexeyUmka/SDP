@@ -23,12 +23,11 @@ namespace ConsoleApp
                 .Build();
             var serviceProvider = new ServiceCollection()
                 .AddScoped<IUnitOfWork, UnitOfWork>()
-                .AddTransient(typeof(IRepository<>), typeof(AdoDisconnectedRepository<>))
+                .AddTransient(typeof(IRepository<>), typeof(DapperRepository<>))
                 .AddSingleton<IDbReaderMapperFactory, DbReaderMapperFactory>()
                 .AddSingleton(configuration)
                 .BuildServiceProvider();
-
-            var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
+            
             var repository = serviceProvider.GetService<IRepository<Customer>>();
             Console.WriteLine("Before Insert");
             DisplayAll(repository);
@@ -36,12 +35,10 @@ namespace ConsoleApp
             Console.WriteLine("After Insert");
             DisplayAll(repository);
             Console.WriteLine("Before Update");
-            unitOfWork.Save();
             DisplayAll(repository);
             repository.Update(new Customer(){Id = 12, FirstName = "sss", LastName = "sss", Phone = "22"});
             Console.WriteLine("After Update");
             DisplayAll(repository);
-            unitOfWork.Rollback();
             var r = repository.GetByKey(new {Id = 12}).ToList();
             Console.WriteLine("get by key 12");
             DisplayCustomer(r.Single());
