@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using DAL.Attributes;
+using DAL.Extensions;
 using DAL.Interfaces;
 
 namespace DAL.Repositories
@@ -15,13 +16,11 @@ namespace DAL.Repositories
         private const string TableIndexName = "Table";
         private string TableName => $"delivery.{typeof(TEntity).Name}";
 
-        private readonly IDbReaderMapper<TEntity> _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
 
-        public AdoDisconnectedRepository(IDbReaderMapperFactory mapperFactory, IUnitOfWork unitOfWork)
+        public AdoDisconnectedRepository(IUnitOfWork unitOfWork)
         {
-            _mapper = mapperFactory.GetMapper<TEntity>();
             _unitOfWork = unitOfWork;
         }
 
@@ -30,10 +29,10 @@ namespace DAL.Repositories
             return GetRows();
         }
 
-        public IEnumerable<TEntity> GetByKey(object key)
+        public TEntity GetByKey(object key)
         {
-            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}='{p.GetValue(key)}' "));
-            return GetRows($"{equalsQuery}");
+            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
+            return GetRows($"{equalsQuery}", parameters: key).FirstOrDefault();
         }
 
         public void Insert(TEntity entity)
@@ -48,14 +47,14 @@ namespace DAL.Repositories
                 dataAdapter.InsertCommand = commandBuilder.GetInsertCommand();
             };
 
-            ExecuteUpdate(CreateRow, count: 1);
+            ExecuteUpdate(CreateRow, count: 1, parameters: entity);
         }
 
         public void Update(TEntity entity)
         {
             var equalsQuery = string.Join("AND", entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
-                .Select(p => $" {p.Name}='{p.GetValue(entity)}' "));
+                .Select(p => $" {p.Name}=@{p.Name} "));
 
             void UpdateRow(DataSet dataSet, SqlDataAdapter dataAdapter)
             {
@@ -66,12 +65,12 @@ namespace DAL.Repositories
                 dataAdapter.UpdateCommand = commandBuilder.GetUpdateCommand();
             }
 
-            ExecuteUpdate(UpdateRow, equalsQuery, 1);
+            ExecuteUpdate(UpdateRow, equalsQuery, 1, entity);
         }
 
         public void Delete(object key)
         {
-            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}='{p.GetValue(key)}' "));
+            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
             void DeleteRow(DataSet dataSet, SqlDataAdapter dataAdapter)
             {
                 if (dataSet.Tables[TableIndexName].Rows.Count == 0)
@@ -85,10 +84,10 @@ namespace DAL.Repositories
                 dataAdapter.DeleteCommand = commandBuilder.GetDeleteCommand();
             }
 
-            ExecuteUpdate(DeleteRow, equalsQuery);
+            ExecuteUpdate(DeleteRow, equalsQuery, parameters: key);
         }
 
-        private IEnumerable<TEntity> GetRows(string where = null, int? count = null)
+        private IEnumerable<TEntity> GetRows(string where = null, int? count = null, object parameters = null)
         {
             using var command = _unitOfWork.GetConnection().CreateCommand() as SqlCommand;
 
@@ -101,6 +100,9 @@ namespace DAL.Repositories
             command.CommandType = CommandType.Text;
             dataAdapter.SelectCommand = command;
             command.Transaction = _unitOfWork.GetTransaction() as SqlTransaction;
+            if(parameters != null){
+                command.AddParameters(parameters);
+            }
 
             var dataSet = new DataSet(TableName);
             dataAdapter.Fill(dataSet);
@@ -123,7 +125,7 @@ namespace DAL.Repositories
             return resultEntities;
         }
 
-        private void ExecuteUpdate(Action<DataSet, SqlDataAdapter> updateAction, string where = null, int? count = null)
+        private void ExecuteUpdate(Action<DataSet, SqlDataAdapter> updateAction, string where = null, int? count = null, object parameters = null)
         {
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
 
@@ -136,6 +138,10 @@ namespace DAL.Repositories
                 $"FROM {TableName} {(where != null ? "WHERE" + where : string.Empty)}";
             command.CommandType = CommandType.Text;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
+            if (parameters != null)
+            {
+                command.AddParameters(parameters);
+            }
 
             dataAdapter.SelectCommand = command as SqlCommand;
 

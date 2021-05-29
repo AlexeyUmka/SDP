@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using DAL.Attributes;
+using DAL.Extensions;
 using DAL.Interfaces;
 
 namespace DAL.Repositories
@@ -34,54 +35,56 @@ namespace DAL.Repositories
             }
         }
 
-        public IEnumerable<TEntity> GetByKey(object key)
+        public TEntity GetByKey(object key)
         {
-            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}='{p.GetValue(key)}' "));
+            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"SELECT * FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
+            command.AddParameters(key);
             using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                yield return _mapper.Map(reader);
-            }
+            reader.Read();
+            return _mapper.Map(reader);
         }
 
         public void Insert(TEntity entity)
         {
-            var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"'{p.GetValue(entity)?.ToString()}'"));
+            var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"@{p.Name}"));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"INSERT INTO delivery.{typeof(TEntity).Name} VALUES ({insertQuery})";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
+            command.AddParameters(entity);
             command.ExecuteNonQuery();
         }
 
         public void Update(TEntity entity)
         {
-            var updateQuery = string.Join(",",entity.GetType().GetProperties().Select(p => $"{p.Name}='{p.GetValue(entity)}'"));
+            var updateQuery = string.Join(",",entity.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name}"));
             var equalsQuery = string.Join("AND",entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
-                .Select(p => $"{p.Name}='{p.GetValue(entity)}' "));
+                .Select(p => $"{p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"UPDATE delivery.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
+            command.AddParameters(entity);
             command.ExecuteNonQuery();
         }
 
         public void Delete(object key)
         {
-            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}='{p.GetValue(key)}' "));
+            var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"DELETE FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
+            command.AddParameters(key);
             command.ExecuteNonQuery();
         }
 

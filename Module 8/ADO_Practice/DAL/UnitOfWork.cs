@@ -3,7 +3,6 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using DAL.Interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace DAL
 {
@@ -11,13 +10,13 @@ namespace DAL
     {
         private IDbConnection _dbConnection;
         private IDbTransaction _dbTransaction;
-        private readonly IConfigurationRoot _configurationRoot;
+        private readonly string _connectionString;
 
         private bool _disposed;
         
-        public UnitOfWork(IConfigurationRoot configurationRoot)
+        public UnitOfWork(string connectionString)
         {
-            _configurationRoot = configurationRoot;
+            _connectionString = connectionString;
         }
 
         public IDbConnection GetConnection()
@@ -26,7 +25,7 @@ namespace DAL
             {
                 var dbProviderFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
                 _dbConnection = dbProviderFactory.CreateConnection();
-                _dbConnection.ConnectionString = _configurationRoot.GetConnectionString("SqlDeliveryDB");
+                _dbConnection.ConnectionString = _connectionString;
                 _dbConnection.Open();
             }
             else if ((new[] {ConnectionState.Broken, ConnectionState.Closed}).Any(state => _dbConnection.State == state))

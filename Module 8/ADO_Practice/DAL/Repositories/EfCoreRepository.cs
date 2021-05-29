@@ -29,9 +29,9 @@ namespace DAL.Repositories
             _dbContext.ChangeTracker.Entries().ToList().ForEach(x => x.State = EntityState.Detached);
         }
         
-        public IEnumerable<TEntity> GetByKey(object key)
+        public TEntity GetByKey(object key)
         {
-            return new List<TEntity>(){_entities.Find(key)};
+            return _entities.Find(key);
         }
 
         public IEnumerable<TEntity> GetAll()

@@ -6,7 +6,7 @@ namespace DAL.Interfaces
         T: class
     {
         IEnumerable<T> GetAll();    
-        IEnumerable<T> GetByKey(object key);    
+        T GetByKey(object key);    
         void Insert(T entity);    
         void Update(T entity);    
         void Delete(object key);
