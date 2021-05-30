@@ -3,8 +3,6 @@ using System.Linq;
 using DAL.Contexts;
 using DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Configuration;
 
 
 namespace DAL.Repositories
@@ -13,11 +11,11 @@ namespace DAL.Repositories
     {
         private readonly DbSet<TEntity> _entities;
 
-        private readonly DbContext _dbContext;
+        private readonly DatabaseContext _dbContext;
 
-        public EfCoreRepository(IConfigurationRoot configurationRoot)
+        public EfCoreRepository(DatabaseContext dbContext)
         {
-            _dbContext = new DatabaseContext(configurationRoot.GetConnectionString("SqlDeliveryDB"));
+            _dbContext = dbContext;
             _entities = _dbContext.Set<TEntity>();
         }
         
@@ -48,7 +46,7 @@ namespace DAL.Repositories
         public void Delete(object key)
         {
             var entity = GetByKey(key);
-            _dbContext.RemoveRange(entity);
+            _dbContext.Remove(entity);
             _dbContext.SaveChanges();
         }
     }

@@ -11,9 +11,9 @@ namespace DAL.Repositories
 {
     public class AdoConnectedRepository<TEntity> : IRepository<TEntity> where TEntity:class, new()
     {
+        private const string DbSchema = "delivery";
         private readonly IDbReaderMapper<TEntity> _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        
 
         public AdoConnectedRepository(IDbReaderMapperFactory mapperFactory, IUnitOfWork unitOfWork)
         {
@@ -25,7 +25,7 @@ namespace DAL.Repositories
         {
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
-            command.CommandText = $"SELECT * FROM delivery.{typeof(TEntity).Name}";
+            command.CommandText = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             using var reader = command.ExecuteReader();
@@ -40,7 +40,7 @@ namespace DAL.Repositories
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
-            command.CommandText = $"SELECT * FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
+            command.CommandText = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(key);
@@ -54,7 +54,7 @@ namespace DAL.Repositories
             var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"@{p.Name}"));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
-            command.CommandText = $"INSERT INTO delivery.{typeof(TEntity).Name} VALUES ({insertQuery})";
+            command.CommandText = $"INSERT INTO {DbSchema}.{typeof(TEntity).Name} VALUES ({insertQuery})";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(entity);
@@ -69,7 +69,7 @@ namespace DAL.Repositories
                 .Select(p => $"{p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
-            command.CommandText = $"UPDATE delivery.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
+            command.CommandText = $"UPDATE {DbSchema}.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(entity);
@@ -81,7 +81,7 @@ namespace DAL.Repositories
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name} "));
             using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
-            command.CommandText = $"DELETE FROM delivery.{typeof(TEntity).Name} WHERE {equalsQuery}";
+            command.CommandText = $"DELETE FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(key);

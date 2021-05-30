@@ -13,12 +13,12 @@ namespace DAL.Repositories
 {
     public class AdoDisconnectedRepository<TEntity> : IRepository<TEntity> where TEntity:class, new()
     {
+        private const string DbSchema = "delivery";
         private const string TableIndexName = "Table";
-        private string TableName => $"delivery.{typeof(TEntity).Name}";
+        private string TableName => $"{DbSchema}.{typeof(TEntity).Name}";
 
         private readonly IUnitOfWork _unitOfWork;
-
-
+        
         public AdoDisconnectedRepository(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
