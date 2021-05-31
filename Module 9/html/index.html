@@ -1,0 +1,101 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Employee</title>
+    <link rel="stylesheet" type="text/css" href="../css/all.css" />
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+</head>
+
+<body>
+    <header class="box">
+        <h1>Employee</h1>
+    </header>
+    <article class="box">
+        <section>
+            <h2>Represents employees</h2>
+            <hr>
+            <form class="switch-form">
+                <input type="checkbox" id="switch" name="switch" />
+                <label for="switch"><i></i></label>
+                <span class="on">Load by inserted data</span>
+                <span class="off">Load by AJAX</span>
+            </form>
+            <p>Please, insert data in the field then press button.<span class="annotate"><sup>*</sup> The data must bein the JSON format.</span></p>
+            <form class="form">
+                <textarea id="json-input" rows="12"></textarea>
+            </form>
+            <span id="ajax-btn" class="btn btn-load">Load data <i class="fa fa-spinner"></i></span>
+            <div class="error-box">
+                <p>Invalid input. Please, insert valid data in the field.</p>
+                <span class="btn-close"><i class="fa fa-times"></i></span>
+            </div>
+        </section>
+        <section id="table-holder">
+            <section class="table-box">
+                <table id="employee-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Average monthly salary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Anna</td>
+                            <td>1664</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Bob</td>
+                            <td>1331</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Dany</td>
+                            <td>8000</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Clara</td>
+                            <td>8000</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Egor</td>
+                            <td>1000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+        <section class="controlls">
+            <span class="btn btn-sort">Sort data</span>
+            <span class="btn btn-get-names">Get first 'n' names</span>
+            <span class="btn btn-get-ids">Get last 'n' ids</span>
+
+            <form class="form-controll">
+                <span class="btn btn-up">+</span>
+                <input id="count-input" type="text" value="0"></input>
+                <span class="btn btn-down">-</span>
+            </form>
+        </section>
+        <span class="annotate rt">* Please, enter quantity ("n" &#8593;) for data you want get.</span>
+        <section class="list-holder">
+            <ul class="list">
+                <li><span>1.</span> Mcfarland</li>
+                <li><span>2.</span> Jeannette</li>
+                <li><span>3.</span> Jeanine</li>
+                <li><span>4.</span> Daniel</li>
+                <li><span>5.</span> Suarez</li>
+            </ul>
+        </section>
+    </article>
+</body>
+
+</html>
