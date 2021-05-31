@@ -1,0 +1,78 @@
+<!doctype html>
+ 
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Employee</title>
+</head>
+ 
+<body>
+    <header>
+        <h1>Employee</h1>
+    </header>
+    <article>
+        <h2>Represents employees</h2>
+        <form class="switch-form">
+            <input type="checkbox" id="switch" name="switch"/>
+            <label for="switch"><i></i></label>
+            <span>Load by inserted data</span>
+            <span>Load by AJAX</span>
+        </form>
+        <p>Please, insert data in the field then press button.<span class="annotate"><sup>*</sup> The data must be in the JSON format.</span></p>
+        <form class="form">
+            <textarea id="json-input" rows="12"></textarea>
+        </form>
+        <button id="ajax-btn">Load data <img src="../images/ajax-loader.gif"></button>
+    </article>
+    <article>
+        <table id="employee-table" class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Average monthly salary</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>Anna</td>
+                <td>1664</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Bob</td>
+                <td>1331</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Dany</td>
+                <td>8000</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Clara</td>
+                <td>8000</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Egor</td>
+                <td>1000</td>
+            </tr>
+            </tbody>
+        </table>
+        <section class="controlls">
+            <span>Sort data</span>
+            <span>Get first 'n' names</span>
+            <span>Get last 'n' ids</span>
+        
+            <form class="form-controll">
+                <span>+</span>
+                <input id="count-input" type="text" value="0"></input>
+                <span>-</span>
+            </form>
+        </section>
+        <span>* Please, enter quantity ("n" &#8593;) for data you want get.</span>
+    </article>
+</body>
+</html>
