@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using DAL.Attributes;
 using DAL.Extensions;
 using DAL.Interfaces;
@@ -24,18 +25,18 @@ namespace DAL.Repositories
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<TEntity> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAll()
         {
-            return GetRows();
+            return await GetRows();
         }
 
-        public TEntity GetByKey(object key)
+        public async Task<TEntity> GetByKey(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
-            return GetRows($"{equalsQuery}", parameters: key).FirstOrDefault();
+            return (await GetRows($"{equalsQuery}", parameters: key)).FirstOrDefault();
         }
 
-        public void Insert(TEntity entity)
+        public async Task Insert(TEntity entity)
         {
             void CreateRow(DataSet dataSet, SqlDataAdapter dataAdapter)
             {
@@ -47,10 +48,10 @@ namespace DAL.Repositories
                 dataAdapter.InsertCommand = commandBuilder.GetInsertCommand();
             };
 
-            ExecuteUpdate(CreateRow, count: 1, parameters: entity);
+            await ExecuteUpdate(CreateRow, count: 1, parameters: entity);
         }
 
-        public void Update(TEntity entity)
+        public async Task Update(TEntity entity)
         {
             var equalsQuery = string.Join("AND", entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
@@ -65,10 +66,10 @@ namespace DAL.Repositories
                 dataAdapter.UpdateCommand = commandBuilder.GetUpdateCommand();
             }
 
-            ExecuteUpdate(UpdateRow, equalsQuery, 1, entity);
+            await ExecuteUpdate(UpdateRow, equalsQuery, 1, entity);
         }
 
-        public void Delete(object key)
+        public async Task Delete(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
             void DeleteRow(DataSet dataSet, SqlDataAdapter dataAdapter)
@@ -84,12 +85,12 @@ namespace DAL.Repositories
                 dataAdapter.DeleteCommand = commandBuilder.GetDeleteCommand();
             }
 
-            ExecuteUpdate(DeleteRow, equalsQuery, parameters: key);
+            await ExecuteUpdate(DeleteRow, equalsQuery, parameters: key);
         }
 
-        private IEnumerable<TEntity> GetRows(string where = null, int? count = null, object parameters = null)
+        private async Task<IEnumerable<TEntity>> GetRows(string where = null, int? count = null, object parameters = null)
         {
-            using var command = _unitOfWork.GetConnection().CreateCommand() as SqlCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as SqlCommand;
 
             var dataAdapter = new SqlDataAdapter();
             dataAdapter.TableMappings.Add(TableName, TableName);
@@ -125,9 +126,9 @@ namespace DAL.Repositories
             return resultEntities;
         }
 
-        private void ExecuteUpdate(Action<DataSet, SqlDataAdapter> updateAction, string where = null, int? count = null, object parameters = null)
+        private async Task ExecuteUpdate(Action<DataSet, SqlDataAdapter> updateAction, string where = null, int? count = null, object parameters = null)
         {
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
 
             var dataAdapter = new SqlDataAdapter();
 

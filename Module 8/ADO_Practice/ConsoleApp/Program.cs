@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 using DAL;
 using DAL.Contexts;
 using DAL.Factories;
@@ -19,83 +19,82 @@ namespace ConsoleApp
     class Program
     {
         private const int Id = 12;
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var serviceProvider = GetServiceProvider();
             
             // Uncomment to test EfCore repository
-            // TestEfCoreRepository(serviceProvider);
-            
+            await TestEfCoreRepository(serviceProvider);
+
+            using var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             // Uncomment to test connectedRepository repository
-            // var connectedRepository = new AdoConnectedRepository<Customer>(serviceProvider.GetService<IDbReaderMapperFactory>(),serviceProvider.GetService<IUnitOfWork>());
-            // TestRepository(connectedRepository, serviceProvider);
+            var connectedRepository = new AdoConnectedRepository<Customer>(serviceProvider.GetService<IDbReaderMapperFactory>(),serviceProvider.GetService<IUnitOfWork>());
+            await TestRepository(connectedRepository, serviceProvider, unitOfWork);
             
             // Uncomment to test disconnectedRepository repository
-            // var disconnectedRepository =
-            //     new AdoDisconnectedRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
-            // TestRepository(disconnectedRepository, serviceProvider);
+            var disconnectedRepository =
+                new AdoDisconnectedRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
+            TestRepository(disconnectedRepository, serviceProvider, unitOfWork);
             
             // Uncomment to test dapperRepository repository
-            // var dapperRepository =
-            //     new DapperRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
-            // TestRepository(dapperRepository, serviceProvider);
+            var dapperRepository =
+                new DapperRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
+            await TestRepository(dapperRepository, serviceProvider, unitOfWork);
         }
 
-        private static void TestRepository(IRepository<Customer> repository, ServiceProvider serviceProvider)
+        private static async Task TestRepository(IRepository<Customer> repository, ServiceProvider serviceProvider, IUnitOfWork unitOfWork)
         {
-            using var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
-            Func<IEnumerable<Customer>> getAll = repository.GetAll;
+            Func<Task<IEnumerable<Customer>>> getAll = repository.GetAll;
             Console.WriteLine("Before Insert");
-            DisplayAll(getAll());
-            repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
+            DisplayAll(await getAll());
+            await repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
             Console.WriteLine("After Insert");
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
             Console.WriteLine("Before Update");
-            DisplayAll(getAll());
-            repository.Update(new Customer(){Id = Id, FirstName = "sss", LastName = "sss", Phone = "22"});
+            DisplayAll(await getAll());
+            await repository.Update(new Customer(){Id = Id, FirstName = "sss", LastName = "sss", Phone = "22"});
             Console.WriteLine("After Update");
-            DisplayAll(getAll());
-            var r = repository.GetByKey(new {Id = Id});
+            DisplayAll(await getAll());
+            var r = await repository.GetByKey(new {Id = Id});
             Console.WriteLine($"get by key {Id}");
             DisplayAll(new []{r});
             Console.WriteLine("Before Delete");
-            DisplayAll(getAll());
-            repository.Delete(new {Id = Id});
+            DisplayAll(await getAll());
+            await repository.Delete(new {Id = Id});
             Console.WriteLine("After Delete");
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
             unitOfWork.Save();
             Console.WriteLine("Begin Transaction Insert");
-            repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
+            await repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
             Console.WriteLine("After Transaction Insert");
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
             Console.WriteLine("After Transaction Insert Rollback");
             unitOfWork.Rollback();
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
         }
 
-        private static void TestEfCoreRepository(IServiceProvider serviceProvider)
+        private static async Task TestEfCoreRepository(IServiceProvider serviceProvider)
         {
-            using var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             var repository = serviceProvider.GetService<IRepository<Customer>>();
-            Func<IEnumerable<Customer>> getAll = repository.GetAll;
+            Func<Task<IEnumerable<Customer>>> getAll = repository.GetAll;
             Console.WriteLine("Before Insert");
-            DisplayAll(getAll());
-            repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
+            DisplayAll(await getAll());
+            await repository.Insert(new Customer(){Id = Id, FirstName = "ggg", LastName = "ggg", Phone = "11"});
             Console.WriteLine("After Insert");
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
             Console.WriteLine("Before Update");
-            DisplayAll(getAll());
-            repository.Update(new Customer(){Id = Id, FirstName = "sss", LastName = "sss", Phone = "22"});
+            DisplayAll(await getAll());
+            await repository.Update(new Customer(){Id = Id, FirstName = "sss", LastName = "sss", Phone = "22"});
             Console.WriteLine("After Update");
-            DisplayAll(getAll());
-            var r = repository.GetByKey(Id);
+            DisplayAll(await getAll());
+            var r = await repository.GetByKey(Id);
             Console.WriteLine($"get by key {Id}");
             DisplayAll(new []{r});
             Console.WriteLine("Before Delete");
-            DisplayAll(getAll());
-            repository.Delete(Id);
+            DisplayAll(await getAll());
+            await repository.Delete(Id);
             Console.WriteLine("After Delete");
-            DisplayAll(getAll());
+            DisplayAll(await getAll());
         }
 
         private static void DisplayAll(IEnumerable<Customer> customers)

@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using DAL.Attributes;
 using DAL.Extensions;
 using DAL.Interfaces;
@@ -21,72 +22,73 @@ namespace DAL.Repositories
             _unitOfWork = unitOfWork;
         }
         
-        public IEnumerable<TEntity> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAll()
         {
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+            await using var reader = await command.ExecuteReaderAsync();
+            var result = new List<TEntity>();
+            while (await reader.ReadAsync())
             {
-                yield return _mapper.Map(reader);
+                result.Add(_mapper.Map(reader));
             }
+            return result;
         }
 
-        public TEntity GetByKey(object key)
+        public async Task<TEntity> GetByKey(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(key);
-            using var reader = command.ExecuteReader();
-            reader.Read();
+            await using var reader = command.ExecuteReader();
+            await reader.ReadAsync();
             return _mapper.Map(reader);
         }
 
-        public void Insert(TEntity entity)
+        public async Task Insert(TEntity entity)
         {
             var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"@{p.Name}"));
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"INSERT INTO {DbSchema}.{typeof(TEntity).Name} VALUES ({insertQuery})";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(entity);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
-        public void Update(TEntity entity)
+        public async Task Update(TEntity entity)
         {
             var updateQuery = string.Join(",",entity.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name}"));
             var equalsQuery = string.Join("AND",entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
                 .Select(p => $"{p.Name}=@{p.Name} "));
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"UPDATE {DbSchema}.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(entity);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
-        public void Delete(object key)
+        public async Task Delete(object key)
         {
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name} "));
-            using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
+            await using var command = _unitOfWork.GetConnection().CreateCommand() as DbCommand;
             command.CommandType = CommandType.Text;
             command.CommandText = $"DELETE FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
             command.Connection = _unitOfWork.GetConnection() as DbConnection;
             command.Transaction = _unitOfWork.GetTransaction() as DbTransaction;
             command.AddParameters(key);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
-
     }
 }

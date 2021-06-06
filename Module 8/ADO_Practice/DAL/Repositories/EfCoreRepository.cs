@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DAL.Contexts;
 using DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -19,35 +20,37 @@ namespace DAL.Repositories
             _entities = _dbContext.Set<TEntity>();
         }
         
-        public void Insert(TEntity entity)
+        public async Task Insert(TEntity entity)
         {
-            _entities.Add(entity);
-            _dbContext.SaveChanges();
-
-            _dbContext.ChangeTracker.Entries().ToList().ForEach(x => x.State = EntityState.Detached);
+            await _entities.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            _dbContext.Entry(entity).State = EntityState.Detached;
         }
         
-        public TEntity GetByKey(object key)
+        public async Task<TEntity> GetByKey(object key)
         {
-            return _entities.Find(key);
+            var entity = await _entities.FindAsync(key);
+            _dbContext.Entry(entity).State = EntityState.Detached;
+            return entity;
         }
 
-        public IEnumerable<TEntity> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAll()
         {
             return _entities.AsNoTracking().ToList();
         }
         
-        public void Update(TEntity entity)
+        public async Task Update(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
+            _dbContext.Entry(entity).State = EntityState.Detached;
         }
         
-        public void Delete(object key)
+        public async Task Delete(object key)
         {
-            var entity = GetByKey(key);
+            var entity = await GetByKey(key);
             _dbContext.Remove(entity);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
