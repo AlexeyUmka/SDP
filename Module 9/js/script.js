@@ -6,11 +6,11 @@ class Employee {
         this.name = name;
         this.salary = salary;
     }
-    
+
     id() {return this.id}
     name() {return this.name}
     salary() {return this.salary}
-    
+
     getAverageMonthlySalary() {}
 }
 
@@ -30,17 +30,17 @@ class Workers {
     constructor(workers) {
         this.workers = workers;
     }
-    
+
     getWorkers() {return this.workers.map(function (worker) {return {id: worker.id, name: worker.name, averageSalary: worker.getAverageMonthlySalary()}})}
-    
+
     getFirstEmployeeNames(amount) {
         return this.workers.slice(0, amount).map(worker => worker.name);
     }
-    
+
     getLastEmployeeIds(amount) {
         return this.workers.slice(this.workers.length - amount, this.workers.length).map(worker => worker.id);
     }
-    
+
     sortByAverageMonthlySalaryDesc() {
         this.workers = this.workers.sort(function(first, second) {
             const firstSalary = first.getAverageMonthlySalary();
@@ -64,11 +64,20 @@ class Workers {
     }
 }
 
+let workers = new Workers([
+    new FixedSalaryEmployee({id: 'id0', name: '0', salary: 0}),
+    new PerHourSalaryEmployee({id: 'id3', name: '3', salary: 3}),
+    new PerHourSalaryEmployee({id: 'id4', name: '4', salary: 4}),
+    new FixedSalaryEmployee({id: 'id1', name: '1', salary: 1}),
+    new FixedSalaryEmployee({id: 'id2', name: '2', salary: 2}),
+    new PerHourSalaryEmployee({id: 'id5', name: '5', salary: 5}),
+])
+
 function countInputChange(value) {
     const element = document.getElementById("count-input");
     const newValue = +element.value + +value
     if (newValue >= 0){
-        element.value = newValue;  
+        element.value = newValue;
     }
 }
 
@@ -78,13 +87,19 @@ function sortWorkers() {
 }
 
 function getFirstNames() {
-    const amount = +document.getElementById("count-input").value;
+    let amount = +document.getElementById("count-input").value;
+    if(amount === 0) {
+        amount = 5;
+    }
     document.getElementById("get-result-list").innerHTML =
         workers.getFirstEmployeeNames(amount).map(name => `<li><span>${name}</span></li>`).join('');
 }
 
 function getLastIds() {
-    const amount = +document.getElementById("count-input").value;
+    let amount = +document.getElementById("count-input").value;
+    if(amount === 0) {
+        amount = 3;
+    }
     document.getElementById("get-result-list").innerHTML =
         workers.getLastEmployeeIds(amount).map(id => `<li><span>${id}</span></li>`).join('');
 }
@@ -97,10 +112,20 @@ function rerenderTheTable(workers) {
         ).join('');
 }
 
+rerenderTheTable(workers.getWorkers());
+
 function loadFromTextArea() {
-    const element = document.getElementById("json-input");
-    workers = new Workers(mapFromJson(JSON.parse(element.value)));
+    const value = document.getElementById("json-input").value;
+    if(!value) {
+        document.getElementById("error-message").style.display = "block";
+        return;
+    }
+    workers = new Workers(mapFromJson(JSON.parse(value)));
     rerenderTheTable(workers.getWorkers());
+}
+
+function closeErrorMessage() {
+    document.getElementById("error-message").style.display = "none";
 }
 
 function mapFromJson(json) {
@@ -120,13 +145,40 @@ function mapFromJson(json) {
     return workers;
 }
 
-let workers = new Workers([
-    new FixedSalaryEmployee({id: 'id0', name: '0', salary: 0}),
-    new PerHourSalaryEmployee({id: 'id3', name: '3', salary: 3}),
-    new PerHourSalaryEmployee({id: 'id4', name: '4', salary: 4}),
-    new FixedSalaryEmployee({id: 'id1', name: '1', salary: 1}),
-    new FixedSalaryEmployee({id: 'id2', name: '2', salary: 2}),
-    new PerHourSalaryEmployee({id: 'id5', name: '5', salary: 5}),
-])
+function loadData() {
+    const element = document.getElementById("switch");
+    if(element.checked) {
+        loadDataFromFile();
+    } else {
+        loadFromTextArea();
+    }
+}
 
-rerenderTheTable(workers.getWorkers());
+function loadDataFromFile() {
+    const fileLoaderId = "loader";
+    if (!document.getElementById(fileLoaderId)) {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.style.display = "none";
+        fileInput.id = fileLoaderId;
+        fileInput.accept = ".json";
+        fileInput.onchange = function (file) {
+            const selectedFile = document.getElementById(fileLoaderId).files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.readAsText(selectedFile, "UTF-8");
+                reader.onload = function (text) {
+                    const result = text.target.result;
+                    document.getElementById("json-input").innerHTML = result;
+                    workers = new Workers(mapFromJson(JSON.parse(result)));
+                    rerenderTheTable(workers.getWorkers());
+                };
+            }
+
+            document.getElementById(fileLoaderId)?.remove();
+        };
+
+        document.body.appendChild(fileInput);
+    }
+    document.getElementById(fileLoaderId).click();
+}
