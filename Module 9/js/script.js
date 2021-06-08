@@ -64,15 +64,6 @@ class Workers {
     }
 }
 
-let workers = new Workers([
-    new FixedSalaryEmployee({id: 'id0', name: '0', salary: 0}),
-    new PerHourSalaryEmployee({id: 'id3', name: '3', salary: 3}),
-    new PerHourSalaryEmployee({id: 'id4', name: '4', salary: 4}),
-    new FixedSalaryEmployee({id: 'id1', name: '1', salary: 1}),
-    new FixedSalaryEmployee({id: 'id2', name: '2', salary: 2}),
-    new PerHourSalaryEmployee({id: 'id5', name: '5', salary: 5}),
-])
-
 function countInputChange(value) {
     const element = document.getElementById("count-input");
     const newValue = +element.value + +value
@@ -105,5 +96,37 @@ function rerenderTheTable(workers) {
             `<tr><td>${worker.id}</td><td>${worker.name}</td><td>${worker.averageSalary}</td></tr>`
         ).join('');
 }
+
+function loadFromTextArea() {
+    const element = document.getElementById("json-input");
+    workers = new Workers(mapFromJson(JSON.parse(element.value)));
+    rerenderTheTable(workers.getWorkers());
+}
+
+function mapFromJson(json) {
+    const workers = [];
+    json.forEach(j => {
+        let worker = {};
+        switch(j.type){
+            case "FixedSalaryEmployee":
+                worker = new FixedSalaryEmployee({id: j.id, name: j.name, salary: j.salary});
+                break;
+            case "PerHourSalaryEmployee":
+                worker = new PerHourSalaryEmployee({id: j.id, name: j.name, salary: j.salary});
+                break;
+        }
+        workers.push(worker);
+    })
+    return workers;
+}
+
+let workers = new Workers([
+    new FixedSalaryEmployee({id: 'id0', name: '0', salary: 0}),
+    new PerHourSalaryEmployee({id: 'id3', name: '3', salary: 3}),
+    new PerHourSalaryEmployee({id: 'id4', name: '4', salary: 4}),
+    new FixedSalaryEmployee({id: 'id1', name: '1', salary: 1}),
+    new FixedSalaryEmployee({id: 'id2', name: '2', salary: 2}),
+    new PerHourSalaryEmployee({id: 'id5', name: '5', salary: 5}),
+])
 
 rerenderTheTable(workers.getWorkers());
