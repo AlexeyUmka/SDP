@@ -44,58 +44,28 @@
                             <th>Average monthly salary</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Anna</td>
-                            <td>1664</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Bob</td>
-                            <td>1331</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>Dany</td>
-                            <td>8000</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>Clara</td>
-                            <td>8000</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>Egor</td>
-                            <td>1000</td>
-                        </tr>
+                    <tbody id="employee-table-body">
                     </tbody>
                 </table>
             </section>
         </section>
         <section class="controlls">
-            <span class="btn btn-sort">Sort data</span>
-            <span class="btn btn-get-names">Get first 'n' names</span>
-            <span class="btn btn-get-ids">Get last 'n' ids</span>
+            <span class="btn btn-sort" onclick="sortWorkers()">Sort data</span>
+            <span class="btn btn-get-names" onclick="getFirstNames()">Get first 'n' names</span>
+            <span class="btn btn-get-ids" onclick="getLastIds()">Get last 'n' ids</span>
 
             <form class="form-controll">
-                <span class="btn btn-up">+</span>
-                <input id="count-input" type="text" value="0"></input>
-                <span class="btn btn-down">-</span>
+                <span class="btn btn-up" onclick="countInputChange(1)">+</span>
+                <input id="count-input" type="number" value="0" min="0">
+                <span class="btn btn-down" onclick="countInputChange(-1)">-</span>
             </form>
         </section>
         <span class="annotate rt">* Please, enter quantity ("n" &#8593;) for data you want get.</span>
         <section class="list-holder">
-            <ul class="list">
-                <li><span>1.</span> Mcfarland</li>
-                <li><span>2.</span> Jeannette</li>
-                <li><span>3.</span> Jeanine</li>
-                <li><span>4.</span> Daniel</li>
-                <li><span>5.</span> Suarez</li>
+            <ul class="list" id="get-result-list">
             </ul>
         </section>
     </article>
+    <script src="../js/script.js" async></script>
 </body>
-
 </html>
