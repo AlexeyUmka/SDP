@@ -1,0 +1,36 @@
+[{
+  "type": "FixedSalaryEmployee",
+  "salary": 1000,
+  "name": "Egor1",
+  "id": "id1"
+},
+  {
+    "type": "PerHourSalaryEmployee",
+    "salary": 2000,
+    "name": "Egor2",
+    "id": "id2"
+  },
+  {
+    "type": "FixedSalaryEmployee",
+    "salary": 3000,
+    "name": "Egor3",
+    "id": "id3"
+  },
+  {
+    "type": "PerHourSalaryEmployee",
+    "salary": 100,
+    "name": "Egor4",
+    "id": "id4"
+  },
+  {
+    "type": "FixedSalaryEmployee",
+    "salary": 300,
+    "name": "Egor5",
+    "id": "id5"
+  },
+  {
+    "type": "PerHourSalaryEmployee",
+    "salary": 1000,
+    "name": "Egor6",
+    "id": "id6"
+  }]

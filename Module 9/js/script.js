@@ -1,7 +1,20 @@
 "use strict";
 
 class Employee {
+    constructor() {
+        if (this.constructor === Employee) {
+            throw new Error("Abstract classes can't be instantiated.");
+        }
+    }
+    
+    getAverageMonthlySalary() {
+        throw new Error("Abstract method doesn't have an implementation.")
+    }
+}
+
+class FixedSalaryEmployee extends Employee {
     constructor({id, name, salary}) {
+        super();
         this.id  = id;
         this.name = name;
         this.salary = salary;
@@ -10,17 +23,24 @@ class Employee {
     id() {return this.id}
     name() {return this.name}
     salary() {return this.salary}
-
-    getAverageMonthlySalary() {}
-}
-
-class FixedSalaryEmployee extends Employee {
+    
     getAverageMonthlySalary() {
         return this.salary;
     }
 }
 
 class PerHourSalaryEmployee extends Employee {
+    constructor({id, name, salary}) {
+        super();
+        this.id  = id;
+        this.name = name;
+        this.salary = salary;
+    }
+
+    id() {return this.id}
+    name() {return this.name}
+    salary() {return this.salary}
+    
     getAverageMonthlySalary() {
         return 20.8 * 8 * this.salary;
     }
