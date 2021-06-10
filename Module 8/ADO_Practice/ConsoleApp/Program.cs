@@ -28,17 +28,17 @@ namespace ConsoleApp
 
             using var unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             // Uncomment to test connectedRepository repository
-            var connectedRepository = new AdoConnectedRepository<Customer>(serviceProvider.GetService<IDbReaderMapperFactory>(),serviceProvider.GetService<IUnitOfWork>());
+            var connectedRepository = new AdoConnectedRepository<Customer>(serviceProvider.GetService<IDbReaderMapperFactory>(), unitOfWork);
             await TestRepository(connectedRepository, serviceProvider, unitOfWork);
             
             // Uncomment to test disconnectedRepository repository
             var disconnectedRepository =
-                new AdoDisconnectedRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
+                new AdoDisconnectedRepository<Customer>(unitOfWork);
             TestRepository(disconnectedRepository, serviceProvider, unitOfWork);
             
             // Uncomment to test dapperRepository repository
             var dapperRepository =
-                new DapperRepository<Customer>(serviceProvider.GetService<IUnitOfWork>());
+                new DapperRepository<Customer>(unitOfWork);
             await TestRepository(dapperRepository, serviceProvider, unitOfWork);
         }
 

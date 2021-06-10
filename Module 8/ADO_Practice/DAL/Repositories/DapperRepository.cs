@@ -18,30 +18,30 @@ namespace DAL.Repositories
             _unitOfWork = unitOfWork;
         }
         
-        public async Task<IEnumerable<TEntity>> GetAll()
+        public Task<IEnumerable<TEntity>> GetAll()
         {
             var connection = _unitOfWork.GetConnection();
             var command = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name}";
-            return await connection.QueryAsync<TEntity>(command, transaction: _unitOfWork.GetTransaction());
+            return connection.QueryAsync<TEntity>(command, transaction: _unitOfWork.GetTransaction());
         }
 
-        public async Task<TEntity> GetByKey(object key)
+        public Task<TEntity> GetByKey(object key)
         {
             var connection = _unitOfWork.GetConnection();
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $" {p.Name}=@{p.Name} "));
             var command = $"SELECT * FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
-            return await connection.QueryFirstAsync<TEntity>(command, key, _unitOfWork.GetTransaction());
+            return connection.QueryFirstAsync<TEntity>(command, key, _unitOfWork.GetTransaction());
         }
 
-        public async Task Insert(TEntity entity)
+        public Task Insert(TEntity entity)
         {
             var connection = _unitOfWork.GetConnection();
             var insertQuery = string.Join(',',entity.GetType().GetProperties().Select(p => $"@{p.Name}"));
             var command = $"INSERT INTO {DbSchema}.{typeof(TEntity).Name} VALUES ({insertQuery})";
-            await connection.ExecuteAsync(command, entity, _unitOfWork.GetTransaction());
+            return connection.ExecuteAsync(command, entity, _unitOfWork.GetTransaction());
         }
 
-        public async Task Update(TEntity entity)
+        public Task Update(TEntity entity)
         {
             var connection = _unitOfWork.GetConnection();
             var updateQuery = string.Join(",",entity.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name}"));
@@ -49,15 +49,15 @@ namespace DAL.Repositories
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
                 .Select(p => $"{p.Name}=@{p.Name} "));
             var command = $"UPDATE {DbSchema}.{typeof(TEntity).Name} SET {updateQuery} WHERE {equalsQuery}";
-            await connection.ExecuteAsync(command, entity, _unitOfWork.GetTransaction());
+            return connection.ExecuteAsync(command, entity, _unitOfWork.GetTransaction());
         }
 
-        public async Task Delete(object key)
+        public Task Delete(object key)
         {
             var connection = _unitOfWork.GetConnection();
             var equalsQuery = string.Join("AND",key.GetType().GetProperties().Select(p => $"{p.Name}=@{p.Name} "));
             var command = $"DELETE FROM {DbSchema}.{typeof(TEntity).Name} WHERE {equalsQuery}";
-            await connection.ExecuteAsync(command, key, transaction: _unitOfWork.GetTransaction());
+            return connection.ExecuteAsync(command, key, transaction: _unitOfWork.GetTransaction());
         }
     }
 }

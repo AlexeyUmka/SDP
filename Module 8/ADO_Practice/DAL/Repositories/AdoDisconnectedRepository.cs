@@ -25,9 +25,9 @@ namespace DAL.Repositories
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAll()
+        public Task<IEnumerable<TEntity>> GetAll()
         {
-            return await GetRows();
+            return GetRows();
         }
 
         public async Task<TEntity> GetByKey(object key)
@@ -36,7 +36,7 @@ namespace DAL.Repositories
             return (await GetRows($"{equalsQuery}", parameters: key)).FirstOrDefault();
         }
 
-        public async Task Insert(TEntity entity)
+        public Task Insert(TEntity entity)
         {
             void CreateRow(DataSet dataSet, SqlDataAdapter dataAdapter)
             {
@@ -48,10 +48,10 @@ namespace DAL.Repositories
                 dataAdapter.InsertCommand = commandBuilder.GetInsertCommand();
             };
 
-            await ExecuteUpdate(CreateRow, count: 1, parameters: entity);
+            return ExecuteUpdate(CreateRow, count: 1, parameters: entity);
         }
 
-        public async Task Update(TEntity entity)
+        public Task Update(TEntity entity)
         {
             var equalsQuery = string.Join("AND", entity.GetType().GetProperties()
                 .Where(p => p.GetCustomAttributes().Any(attr => attr is Identifier))
@@ -66,7 +66,7 @@ namespace DAL.Repositories
                 dataAdapter.UpdateCommand = commandBuilder.GetUpdateCommand();
             }
 
-            await ExecuteUpdate(UpdateRow, equalsQuery, 1, entity);
+            return ExecuteUpdate(UpdateRow, equalsQuery, 1, entity);
         }
 
         public async Task Delete(object key)

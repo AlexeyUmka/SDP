@@ -34,9 +34,9 @@ namespace DAL.Repositories
             return entity;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAll()
+        public Task<IEnumerable<TEntity>> GetAll()
         {
-            return _entities.AsNoTracking().ToList();
+            return Task.FromResult(_entities.AsNoTracking().AsEnumerable());
         }
         
         public async Task Update(TEntity entity)
